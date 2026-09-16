@@ -1,3 +1,5 @@
+// The LOGIN/SIGNUP page (handled by Clerk)
+
 import {
   ClerkProvider,
   Show,
