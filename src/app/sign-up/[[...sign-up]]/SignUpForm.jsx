@@ -69,10 +69,11 @@ export default function SignUpForm({ countries }) {
         } finally {
             setLoading(false);
         }
-
-        const fieldClass = "mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-900";
-        const labelClass = "block text-sm font-medium text-zinc-700";
+    
     }
+
+    const fieldClass = "mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-900";
+    const labelClass = "block text-sm font-medium text-zinc-700";
 
     return (
         <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
