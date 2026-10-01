@@ -119,8 +119,8 @@ export default function SignUpForm({ countries }) {
 
                     {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
-                    <button type="submit" disabled={!isLoaded || loading} className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60">
-                        {loading ? "Creating account..." : "Continue"}
+                    <button type="submit" disabled={!signUp || busy} className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60">
+                        {busy ? "Creating account..." : "Continue"}
                     </button>
                 </form>
             ) : (
