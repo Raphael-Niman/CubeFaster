@@ -1,3 +1,5 @@
+// The main HOME PAGE of the web application
+
 import Image from "next/image";
 
 export default function Home() {

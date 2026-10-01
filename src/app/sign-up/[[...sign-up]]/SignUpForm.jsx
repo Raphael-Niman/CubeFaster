@@ -77,6 +77,7 @@ export default function SignUpForm({ countries }) {
 
     return (
         <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-8 shadow-sm">
+            {/* for the modal later */}
             <h1 className="text-xl font-semibold text-zinc-900">Create your account</h1>
             <p className="mt-1 text-sm text-zinc-500">
                 Welcome! Please fill in the details to get started.
@@ -142,10 +143,12 @@ export default function SignUpForm({ countries }) {
                 </form>
             )}
 
-            <p className="mt-6 text-center text-sm text-zinc-600">
+            <div className="mt-6 border-t border-zinc-200 pt-4 text-center text-sm">
                 Already have an account?{" "}
-                <Link href="/sign-in" className="font-medium text-zinc-900 underline">Sign in</Link>
-            </p>
+                <Link href="/sign-in" className="font-semibold text-zinc-900">
+                    Sign in
+                </Link>
+            </div>
         </div>
     );
 }
