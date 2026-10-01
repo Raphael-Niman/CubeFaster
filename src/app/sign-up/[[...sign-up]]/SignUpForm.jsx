@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function SignUpForm({ countries }) {
-    const { isLoaded, signUp, setActive } = useSignUp();
+    const { signUp, fetchStatus } = useSignUp();
     const router = useRouter();
+    const busy = fetchStatus === "fetching";
 
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
@@ -20,56 +21,49 @@ export default function SignUpForm({ countries }) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    function getMessage(error, fallback) {
+        return error?.errors?.[0]?.longMessage || error?.message || fallback;
+    }
+
     async function handleSubmit(e) {
         e.preventDefault();
-        if (!isLoaded || !signUp) return;
-
+        if (!signUp) return;
         setError("");
-        setLoading(true);
 
-        try {
-            await signUp.create( {
-                firstName, lastName, username, emailAddress, password,
-                unsafeMetadata: { country_id: countryId },
-            });
-
-            await signUp.prepareEmailAddressVerification({
-                strategy: "email_code",
-            });
-
-            setPendingVerification(true);
-        } catch (err) {
-            const message = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Something went wrong. Please try again.";
-            setError(message);
-        } finally {
-            setLoading(false);
+        const { error: createError } = await signUp.create( {
+            firstName, lastName, username, emailAddress, password, unsafeMetadata: {country_id: countryId}, });
+        if (createError) {
+            setError(getMessage(createError, "Something went wrong. Please try again."));
+            return;
         }
+
+        const { error: sendError } = await signUp.verifications.sendEmailCode();
+        if (sendError) {
+            setError(getMessage(sendError, "Couldn't send the verification code."));
+            return;
+        }
+
+        setPendingVerification(true);
     }
 
     async function handleVerify(e) {
         e.preventDefault();
-        if (!isLoaded || !signUp) return;
-
+        if (!signUp) return;
         setError("");
-        setLoading(true);
 
-        try {
-            const result = await signUp.attemptEmailAddressVerification({ code });
-
-            if (result.status === "complete") {
-                await setActive({ session: result.createdSessionId });
-                router.push("/");
-                return;
-            }
-
-            setError("Verification incomplete. Please try again.");
-        } catch (err) {
-            const message = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || "Invalid code. Please try again.";
-            setError(message);
-        } finally {
-            setLoading(false);
+        const { error: verifyError } = await signUp.verifications.verifyEmailCode({ code });
+        if (verifyError) {
+            setError(getMessage(verifyError, "Invalid code. Please try again."));
+            return;
         }
-    
+
+        if (signUp.status !== "complete") {
+            setError("Verification incomplete. Please try again.");
+            return;
+        }
+
+        await signUp.finalize();
+        router.push("/");
     }
 
     const fieldClass = "mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-900";
@@ -108,7 +102,7 @@ export default function SignUpForm({ countries }) {
 
                     <div>
                         <label className={labelClass} htmlFor="password">Password</label>
-                        <input id="password" className={fieldClass} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <input id="password" type="password" className={fieldClass} value={password} onChange={(e) => setPassword(e.target.value)} required />
                     </div>
 
                     <div>
@@ -137,8 +131,8 @@ export default function SignUpForm({ countries }) {
                         <input id="code" className={fieldClass} value={code} onChange={(e) => setCode(e.target.value)} required />
                     </div>
                     {error ? <p className="text-sm text-red-600">{error}</p> : null}
-                    <button type="submit" disabled={!isLoaded || loading} className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60">
-                        {loading ? "Verifying..." : "Verify email"}
+                    <button type="submit" disabled={!signUp || busy} className="w-full rounded-md bg-zinc-900 px-3 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-60">
+                        {busy ? "Verifying..." : "Verify email"}
                     </button>
                 </form>
             )}
